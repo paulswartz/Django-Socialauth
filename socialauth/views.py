@@ -1,5 +1,6 @@
 import logging
 import urllib
+import urlparse
 from oauth import oauth
 
 from django.shortcuts import render_to_response
@@ -32,6 +33,8 @@ TWITTER_CONSUMER_SECRET = getattr(settings, 'TWITTER_CONSUMER_SECRET', '')
 FACEBOOK_APP_ID = getattr(settings, 'FACEBOOK_APP_ID', '')
 FACEBOOK_API_KEY = getattr(settings, 'FACEBOOK_API_KEY', '')
 FACEBOOK_SECRET_KEY = getattr(settings, 'FACEBOOK_SECRET_KEY', '')
+FACEBOOK_CONNECT_URL = getattr(settings, 'FACEBOOK_CONNECT_URL', '')
+FACEBOOK_CONNECT_DOMAIN = getattr(settings, 'FACEBOOK_CONNECT_DOMAIN', '')
 
 
 def del_dict_key(src_dict, key):
@@ -209,7 +212,15 @@ def facebook_login(request):
 
     params = {}
     params["client_id"] = FACEBOOK_APP_ID
-    params["redirect_uri"] = request.build_absolute_uri(reverse("socialauth_facebook_login_done"))
+
+    redirect_uri = request.build_absolute_uri(reverse('socialauth_facebook_login_done'))
+    if FACEBOOK_CONNECT_DOMAIN and FACEBOOK_CONNECT_URL:
+        o = urlparse.urlparse(redirect_uri)
+        if not o.netloc.endswith(FACEBOOK_CONNECT_DOMAIN):
+            redirect_uri = FACEBOOK_CONNECT_URL % urllib.quote(redirect_uri, safe='')
+            request.session['facebook_redirect_uri'] = redirect_uri
+
+    params["redirect_uri"] = redirect_uri
 
     url = "https://graph.facebook.com/oauth/authorize?"+urllib.urlencode(params)
 
