@@ -318,9 +318,9 @@ class FacebookBackend:
             FacebookUserProfile.objects.create(
                 facebook_uid=uid,
                 user=user,
-                location=fb_data['location']['name'],
-                url=fb_data['website'],
-                about_me=fb_data['about'])
+                location=fb_data.get('location', {}).get('name', ''),
+                url=fb_data.get('website', ''),
+                about_me=fb_data.get('about', ''))
 
             auth_meta = AuthMeta(user=user, provider='Facebook').save()
                 
