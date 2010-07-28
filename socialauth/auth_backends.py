@@ -305,11 +305,12 @@ class FacebookBackend:
             
             # create new FacebookUserProfile
             if not user:
-                count = User.objects.filter(username=fb_data['name']).count()
+                name = fb_data['name']
+                count = User.objects.filter(username__startswith=name).count()
                 if not count:
-                    username = fb_data['name']
+                    username = name
                 else:
-                    username = '%s %i' % (fb_data['name'], count + 1)
+                    username = '%s %i' % (name, count + 1)
 
                 user = User.objects.create(username=username,
                                            first_name=fb_data['first_name'],
