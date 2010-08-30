@@ -154,7 +154,7 @@ def openid_login(request):
         return begin(request)
 
 def gmail_login(request):
-    request.session['openid_provider'] = 'Google'
+    request.session['openid_provider'] = 'google'
     return begin(request, user_url='https://www.google.com/accounts/o8/id')
 
 def gmail_login_complete(request):
