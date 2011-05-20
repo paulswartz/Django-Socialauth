@@ -175,7 +175,7 @@ class LinkedInBackend:
                                               linkedin_uid=profile.id)
             userprofile.save()
             
-            auth_meta = AuthMeta(user=user, provider='LinkedIn').save()
+            AuthMeta.objects.create(user=user, provider='LinkedIn')
             return user
 
     def get_user(self, user_id):
@@ -251,7 +251,7 @@ class TwitterBackend:
             user_profile.profile_image_url = userinfo.profile_image_url
             user_profile.save()
             
-            auth_meta = AuthMeta(user=user, provider='Twitter').save()
+            AuthMeta.objects.create(user=user, provider='Twitter')
                 
             return user
 
@@ -333,7 +333,7 @@ class FacebookBackend:
                 url=fb_data.get('website', ''),
                 about_me=fb_data.get('about', ''))
 
-            auth_meta = AuthMeta(user=user, provider='Facebook').save()
+            AuthMeta.objects.create(user=user, provider='Facebook')
                 
             return user
 
