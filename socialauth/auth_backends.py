@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.conf import settings
 import facebook
@@ -30,6 +31,10 @@ LINKEDIN_CONSUMER_SECRET = getattr(settings, 'LINKEDIN_CONSUMER_SECRET', '')
 OPENID_AX_PROVIDER_MAP = getattr(settings, 'OPENID_AX_PROVIDER_MAP', {})
 
 class OpenIdBackend:
+    supports_object_permissions = False
+    supports_anonymous_user = False
+    supports_inactive_user = False
+
     def authenticate(self, openid_key, request, provider, user=None):
         try:
             assoc = UserAssociation.objects.get(openid_key=openid_key)
@@ -270,16 +275,22 @@ class FacebookBackend:
             params = {}
             params["client_id"] = FACEBOOK_APP_ID
             params["client_secret"] = FACEBOOK_SECRET_KEY
-            redirect_uri = request.build_absolute_uri(reverse('socialauth_facebook_login_done'))
+            params["redirect_uri"] = '%s://%s%s' % (
+                         'https' if request.is_secure() else 'http',
+                         Site.objects.get_current().domain,
+                         reverse("socialauth_facebook_login_done"))
             if FACEBOOK_CONNECT_DOMAIN and FACEBOOK_CONNECT_URL:
-                o = urlparse.urlparse(redirect_uri)
+                o = urlparse.urlparse(params['redirect_uri'])
                 if not o.netloc.endswith(FACEBOOK_CONNECT_DOMAIN):
-                    redirect_uri = FACEBOOK_CONNECT_URL % urllib.quote(redirect_uri, safe='')
+                    params['redirect_uri'] = FACEBOOK_CONNECT_URL % (
+                        urllib.quote(params['redirect_uri'], safe=''))
+
+            params["code"] = request.GET.get('code', '')
 
             params["redirect_uri"] = redirect_uri
             params["code"] = request.GET.get('code', '')
             url = ("https://graph.facebook.com/oauth/access_token?"
-                   +urllib.urlencode(params))
+                   + urllib.urlencode(params))
             from cgi import parse_qs
             userdata = urllib.urlopen(url).read()
             res_parse_qs = parse_qs(userdata)
@@ -295,7 +306,6 @@ class FacebookBackend:
             if not fb_data:
                 return None
             uid = fb_data['id']
-
             
         try:
             fb_user = FacebookUserProfile.objects.get(facebook_uid=uid)
