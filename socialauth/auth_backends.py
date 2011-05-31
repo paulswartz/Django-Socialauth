@@ -287,8 +287,6 @@ class FacebookBackend:
 
             params["code"] = request.GET.get('code', '')
 
-            params["redirect_uri"] = redirect_uri
-            params["code"] = request.GET.get('code', '')
             url = ("https://graph.facebook.com/oauth/access_token?"
                    + urllib.urlencode(params))
             from cgi import parse_qs
