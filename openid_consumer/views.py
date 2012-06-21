@@ -70,7 +70,7 @@ def begin(request, redirect_to=None, on_failure=None, user_url=None,
             redirect_to.startswith('http://')
         or
             redirect_to.startswith('https://')):
-        redirect_to =  get_url_host(request) + redirect_to
+        redirect_to =  get_url_host(request) + str(redirect_to)
     
     if request.GET.get('next') and is_valid_next_url(request.GET['next']):
         if '?' in redirect_to:
